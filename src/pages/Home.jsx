@@ -1,14 +1,25 @@
-import { Typography, Box } from '@mui/material';
+import { Container, Typography, Box, Button } from "@mui/material";
+import { Link } from "react-router-dom";
 
-const Home = () => (
-  <Box sx={{ padding: 3 }}>
-    <Typography variant="h3" gutterBottom>
-      Welcome to Smart Vehicle Monitoring System
-    </Typography>
-    <Typography variant="body1">
-      This project monitors driver behavior to improve safety and performs predictive maintenance to reduce vehicle downtime.
-    </Typography>
-  </Box>
-);
+export default function Home() {
+  return (
+    <Container sx={{ textAlign: "center", mt: 8 }}>
+      <Typography variant="h3" gutterBottom>
+        Smart Vehicle Monitoring 🚗
+      </Typography>
+      <Typography variant="h6" color="text.secondary" gutterBottom>
+        Monitor driver behavior & predict vehicle health with AI — real-time insights for safer roads.
+      </Typography>
 
-export default Home;
+      <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
+        <Button variant="contained" size="large" component={Link} to="/dashboard">
+          Go to Dashboard
+        </Button>
+        <Button variant="outlined" size="large" component={Link} to="/about">
+          About Project
+        </Button>
+      </Box>
+    </Container>
+  );
+}
+

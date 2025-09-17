@@ -1,35 +1,34 @@
-import React from 'react';
-import { Typography, Box, Paper, List, ListItem, ListItemText, Divider } from '@mui/material';
+import { Container, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 
-const logData = [
-  { time: '2025-09-16 14:12', event: 'Driver Drowsy Detected' },
-  { time: '2025-09-16 13:45', event: 'Brake Service Suggested' },
-  { time: '2025-09-15 16:30', event: 'Battery Health Low' },
+const logs = [
+  { id: 1, time: "2025-09-12 10:00", event: "Driver marked as Safe" },
+  { id: 2, time: "2025-09-12 10:05", event: "Low Battery Detected" },
+  { id: 3, time: "2025-09-12 10:10", event: "Brakes require service" },
 ];
 
-const Logs = () => (
-  <Box sx={{ padding: 3, maxWidth: 700, margin: 'auto' }}>
-    <Paper elevation={3} sx={{ padding: 4 }}>
-      <Typography variant="h3" gutterBottom>
-        Event Logs
-      </Typography>
-      <Divider sx={{ marginBottom: 2 }} />
-      
-      <List>
-        {logData.map(({ time, event }, index) => (
-          <React.Fragment key={index}>
-            <ListItem>
-              <ListItemText
-                primary={event}
-                secondary={time}
-              />
-            </ListItem>
-            {index < logData.length - 1 && <Divider component="li" />}
-          </React.Fragment>
-        ))}
-      </List>
-    </Paper>
-  </Box>
-);
+export default function Logs() {
+  return (
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>Event Logs</Typography>
+      <Paper>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Time</TableCell>
+              <TableCell>Event</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {logs.map((log) => (
+              <TableRow key={log.id}>
+                <TableCell>{log.time}</TableCell>
+                <TableCell>{log.event}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Container>
+  );
+}
 
-export default Logs;
