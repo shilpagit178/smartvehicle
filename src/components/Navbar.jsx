@@ -1,141 +1,283 @@
-import React, { useContext } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import { Link, useLocation } from 'react-router-dom';
-import { ColorModeContext } from '../ThemeContext';
-import IconButton from '@mui/material/IconButton';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useTheme } from '@mui/material/styles';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Avatar,
+  Box,
+  useTheme
+} from '@mui/material';
+import { 
+  DirectionsCar, 
+  AccountCircle, 
+  Brightness4, 
+  Brightness7,
+  Home as HomeIcon,
+  Dashboard as DashboardIcon,
+  Assignment as LogsIcon,
+  Info as AboutIcon
+} from '@mui/icons-material';
+import { useState, useContext } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ColorModeContext } from '../themeContext';
 
-const Navbar = ({ user, onLogout }) => {
+export default function Navbar({ user, onLogout }) {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
-  const location = useLocation();
-  const navLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'Dashboard', to: '/dashboard' },
-    { label: 'Logs', to: '/logs' },
-    { label: 'About', to: '/about' },
-  ];
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    onLogout();
+    handleClose();
+    navigate('/');
+  };
+
+  const isActive = (path) => location.pathname === path;
+
+  const navButtonStyle = (path) => ({
+    fontWeight: isActive(path) ? 'bold' : 'normal',
+    borderBottom: isActive(path) ? '2px solid white' : '2px solid transparent',
+    borderRadius: '8px 8px 0 0',
+    px: 2,
+    py: 1,
+    mx: 0.5,
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      borderBottom: '2px solid white',
+      transform: 'translateY(-2px)'
+    }
+  });
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(120deg, #232526 0%, #353a40 100%)'
-            : 'linear-gradient(120deg, #f6f8fc 0%, #e9eef6 100%)',
-          color: theme.palette.mode === 'dark' ? '#fff' : '#232526',
-          borderBottom: 'none',
-          boxShadow: 'none',
-          zIndex: 1201,
-        }}
-      >
-        <Toolbar sx={{ minHeight: 64, px: { xs: 1, sm: 4 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 3 }}>
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{
-                fontWeight: 700,
-                letterSpacing: 0.5,
-                color: theme.palette.mode === 'dark' ? '#fff' : '#232526',
-                fontFamily: 'Inter, Roboto, Arial',
-                userSelect: 'none',
-                fontSize: { xs: 20, sm: 22 },
-              }}
-            >
-              Smart Vehicles
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 2, justifyContent: 'flex-start', ml: { xs: 4, sm: 12 } }}>
-            {navLinks.map((link) => (
-              <Button
-                key={link.to}
-                component={Link}
-                to={link.to}
-                color="inherit"
-                disableElevation
-                sx={{
-                  px: 1.5,
-                  py: 0.5,
-                  fontWeight: 500,
-                  fontSize: 15,
-                  borderRadius: 0,
-                  minWidth: 0,
-                  background: 'none',
-                  color: location.pathname === link.to
-                    ? theme.palette.primary.main
-                    : (theme.palette.mode === 'dark' ? '#fff' : '#232526'),
-                  borderBottom: location.pathname === link.to
-                    ? `2px solid ${theme.palette.primary.main}`
-                    : '2px solid transparent',
-                  boxShadow: 'none',
-                  transition: 'color 0.2s, border-bottom 0.2s',
-                  '&:hover': {
-                    color: theme.palette.primary.main,
-                    background: 'none',
-                    borderBottom: `2px solid ${theme.palette.primary.main}`,
-                  },
+    <AppBar 
+      position="static"
+      elevation={4}
+      sx={{ 
+        background: theme.palette.mode === 'dark' 
+          ? 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)'
+          : 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        boxShadow: theme.palette.mode === 'dark'
+          ? '0 4px 20px rgba(255, 107, 53, 0.3)'
+          : '0 4px 20px rgba(255, 107, 53, 0.2)',
+      }}
+    >
+      <Toolbar sx={{ px: { xs: 2, md: 3 } }}>
+        {/* Custom Logo - Replaces the old DirectionsCar icon */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mr: 2,
+            cursor: 'pointer',
+            '&:hover': {
+              transform: 'scale(1.05)',
+            },
+            transition: 'transform 0.3s ease'
+          }}
+          onClick={() => navigate('/home')}
+        >
+          <Box
+            component="img"
+            src="/vahanai-logo.svg"
+            alt="VahanAI Logo"
+            sx={{
+              width: 40,
+              height: 40,
+              mr: 2,
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+              '&:hover': {
+                filter: 'drop-shadow(0 4px 8px rgba(255,255,255,0.3))',
+                transform: 'rotate(10deg)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          />
+        </Box>
+        
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            flexGrow: 1, 
+            fontWeight: 800,
+            color: 'white !important',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            cursor: 'pointer',
+            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+            userSelect: 'none',
+            display: 'block'
+          }}
+          onClick={() => navigate('/home')}
+        >
+          VahanAI
+        </Typography>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Home Button */}
+          <Button 
+            color="inherit" 
+            startIcon={<HomeIcon />}
+            onClick={() => navigate('/home')}
+            sx={{
+              ...navButtonStyle('/home'),
+              color: 'white',
+              display: { xs: 'none', sm: 'flex' }
+            }}
+          >
+            Home
+          </Button>
+
+          {/* Dashboard Button */}
+          <Button 
+            color="inherit" 
+            startIcon={<DashboardIcon />}
+            onClick={() => navigate('/dashboard')}
+            sx={{
+              ...navButtonStyle('/dashboard'),
+              color: 'white',
+              display: { xs: 'none', sm: 'flex' }
+            }}
+          >
+            Dashboard
+          </Button>
+
+          {/* Logs Button */}
+          <Button 
+            color="inherit" 
+            startIcon={<LogsIcon />}
+            onClick={() => navigate('/logs')}
+            sx={{
+              ...navButtonStyle('/logs'),
+              color: 'white',
+              display: { xs: 'none', sm: 'flex' }
+            }}
+          >
+            Logs
+          </Button>
+
+          {/* About Button */}
+          <Button 
+            color="inherit" 
+            startIcon={<AboutIcon />}
+            onClick={() => navigate('/about')}
+            sx={{
+              ...navButtonStyle('/about'),
+              color: 'white',
+              display: { xs: 'none', sm: 'flex' }
+            }}
+          >
+            About
+          </Button>
+
+          {/* Theme Toggle */}
+          <IconButton 
+            color="inherit" 
+            onClick={colorMode.toggleColorMode}
+            sx={{
+              mx: 1,
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                transform: 'scale(1.1)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+          </IconButton>
+
+          {/* User Menu */}
+          <IconButton
+            size="large"
+            onClick={handleMenu}
+            color="inherit"
+            sx={{
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                transform: 'scale(1.05)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {user?.isDemo ? (
+              <AccountCircle sx={{ fontSize: 32 }} />
+            ) : (
+              <Avatar 
+                sx={{ 
+                  width: 32, 
+                  height: 32, 
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem',
+                  color: 'white'
                 }}
               >
-                {link.label}
-              </Button>
-            ))}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, position: 'absolute', right: 32 }}>
-              <IconButton color="inherit" onClick={colorMode.toggleColorMode}>
-                {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-              </IconButton>
+                {user?.username?.charAt(0).toUpperCase() || 'U'}
+              </Avatar>
+            )}
+          </IconButton>
 
-              {!user ? (
-                <>
-                  <Button
-                    component={Link}
-                    to="/login"
-                    color="primary"
-                    variant="outlined"
-                    sx={{ fontWeight: 500, borderRadius: 2, textTransform: 'none' }}
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/signup"
-                    color="primary"
-                    variant="contained"
-                    sx={{ fontWeight: 500, borderRadius: 2, textTransform: 'none', boxShadow: 0 }}
-                  >
-                    Sign Up
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Typography sx={{ fontWeight: 500, fontSize: 15, mx: 1 }}>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+            sx={{
+              '& .MuiPaper-root': {
+                bgcolor: theme.palette.background.paper,
+                boxShadow: '0 8px 32px rgba(255, 107, 53, 0.15)',
+                borderRadius: 2,
+                minWidth: 180,
+                mt: 1,
+                border: '1px solid rgba(255, 107, 53, 0.1)'
+              }
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <MenuItem disabled sx={{ opacity: 0.7 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Typography variant="body2" fontWeight="bold" sx={{ color: '#FF6B35' }}>
+                  {user?.isDemo ? 'Demo User' : user?.username}
+                </Typography>
+                {!user?.isDemo && user?.email && (
+                  <Typography variant="caption" color="text.secondary">
                     {user.email}
                   </Typography>
-                  <Button
-                    onClick={onLogout}
-                    color="inherit"
-                    variant="text"
-                    sx={{ fontWeight: 500, borderRadius: 2, textTransform: 'none' }}
-                  >
-                    Logout
-                  </Button>
-                </>
-              )}
-            </Box>
-          </Box>
-        </Toolbar>
-      </AppBar>
-    </Box>
+                )}
+              </Box>
+            </MenuItem>
+            
+            {!user?.isDemo && (
+              <MenuItem onClick={handleClose}>
+                <Typography variant="body2">Profile Settings</Typography>
+              </MenuItem>
+            )}
+            
+            <MenuItem onClick={handleLogout}>
+              <Typography variant="body2" sx={{ color: '#f44336' }}>
+                Logout
+              </Typography>
+            </MenuItem>
+          </Menu>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
-};
-
-export default Navbar;
-
+}
