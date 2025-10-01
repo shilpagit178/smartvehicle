@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { CustomThemeProvider } from './ThemeContext';
+import { CustomThemeProvider } from './themeContext'; 
 
 // Import your components
 import LandingPage from './pages/LandingPage';
