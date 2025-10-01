@@ -1,8 +1,7 @@
 import React, { createContext, useState, useMemo } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { lightTheme, darkTheme } from './theme';
-
+import { lightTheme, darkTheme } from './Theme';
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
 export const CustomThemeProvider = ({ children }) => {

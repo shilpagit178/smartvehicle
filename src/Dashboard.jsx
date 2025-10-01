@@ -14,6 +14,9 @@ import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 
+// API configuration for deployment
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const lineData = [
   { time: "10:00", confidence: 0.7 },
   { time: "10:05", confidence: 0.8 },
@@ -113,14 +116,16 @@ export default function Dashboard({ user }) {
         throw new Error('Authentication required. Please login.');
       }
 
-      const res = await axios.post("http://localhost:5000/predict_trip_behavior", {
+      // Updated API call with environment variable
+      const res = await axios.post(`${API_BASE_URL}/predict_trip_behavior`, {
         harsh_brake_count: 3,
         harsh_accel_count: 2,
         sharp_turn_count: 1,
         overspeeding_seconds: 45
       }, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       setBehavior(res.data);
@@ -148,13 +153,15 @@ export default function Dashboard({ user }) {
         throw new Error('Authentication required. Please login.');
       }
 
-      const res = await axios.post("http://localhost:5000/predict_maintenance_status", {
+      // Updated API call with environment variable
+      const res = await axios.post(`${API_BASE_URL}/predict_maintenance_status`, {
         battery_voltage: 11.8,
         brake_pad_thickness: 2.5,
         engine_temp: 95
       }, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       setMaintenance(res.data);
@@ -264,7 +271,7 @@ export default function Dashboard({ user }) {
           </Typography>
         )}
 
-        {/* Cards Grid */}
+        {/* Cards Grid - Rest of your existing JSX remains the same */}
         <Grid container spacing={4} justifyContent="center" alignItems="stretch" sx={{ flex: 1, alignItems: 'center' }}>
           {/* Driver Behavior Card */}
           <Grid item xs={12} lg={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}>
