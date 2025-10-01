@@ -26,7 +26,7 @@ import {
   Brightness7,
   DriveEta
 } from '@mui/icons-material';
-import { ColorModeContext } from '../themeContext';
+import { ColorModeContext } from '../ThemeContext';
 import axios from 'axios';
 
 // Animations

@@ -35,7 +35,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
-import { ColorModeContext } from '../themeContext';
+import { ColorModeContext } from '../ThemeContext';
 
 // Animations
 const fadeInUp = keyframes`

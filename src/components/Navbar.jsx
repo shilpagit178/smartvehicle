@@ -22,7 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ColorModeContext } from '../themeContext';
+import { ColorModeContext } from '../ThemeContext';
 
 export default function Navbar({ user, onLogout }) {
   const [anchorEl, setAnchorEl] = useState(null);

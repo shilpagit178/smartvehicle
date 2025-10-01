@@ -24,7 +24,7 @@ import {
   Brightness4,
   Brightness7
 } from '@mui/icons-material';
-import { ColorModeContext } from '../themeContext';
+import { ColorModeContext } from '../ThemeContext';
 import axios from 'axios';
 
 // Animations
