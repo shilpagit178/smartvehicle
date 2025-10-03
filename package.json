@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite preview --port 4173",
+    "start": "vite preview --port $PORT --host",
     "deploy": "npm run build && npm run preview"
   },
   "dependencies": {
