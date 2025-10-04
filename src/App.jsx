@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { CustomThemeProvider } from './ThemeContext';
 
 import LandingPage from './pages/LandingPage';
@@ -88,6 +89,7 @@ function App() {
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Analytics />
       </Router>
     </CustomThemeProvider>
   );
