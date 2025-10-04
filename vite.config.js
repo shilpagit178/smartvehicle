@@ -9,6 +9,15 @@ export default defineConfig({
     open: true,
     host: true
   },
+  preview: {
+    port: 4173,
+    host: true,
+    allowedHosts: [
+      'smartvehicle-production.up.railway.app',
+      'localhost',
+      '127.0.0.1'
+    ]
+  },
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -21,9 +30,5 @@ export default defineConfig({
         }
       }
     }
-  },
-  preview: {
-    port: 4173,
-    host: true
   }
 })
