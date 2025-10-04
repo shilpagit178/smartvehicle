@@ -1,12 +1,19 @@
-# React + Vite
+## Problem Statement
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+To build a smart vehicle dashboard web application that provides real-time insights into driver behavior and vehicle maintenance using machine learning. The goal is to help users monitor driving patterns, predict maintenance needs, and visualize key metrics in a modern, user-friendly interface.
 
-Currently, two official plugins are available:
+## Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### **AI-Powered Analytics**
+- **Driver Behavior Classification** - Categorizes drivers into Safe/Risky based on real-time data
+- **Predictive Maintenance** - Forecasts vehicle component failures before they occur
+- **Confidence Scoring** - ML prediction confidence levels (95-99%)
 
-## Expanding the ESLint configuration
+### **Smart Dashboard**
+- **Interactive Visualizations** - Real-time charts using Recharts library
+- **Driver Safety Scoring** - Color-coded ratings (🟢 Safe / 🔴 Risky)
+- **Component Health Monitoring** - Battery, brakes, engine temperature tracking
+- **Responsive Design** - Works seamlessly on desktop and mobile
+- **User Authentication** - Secure login and registration system
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+

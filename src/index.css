@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #f5f7ff; /* will be overridden by MUI theme */
+  background-color: #f5f7ff; 
   color: #213547;
 }
 

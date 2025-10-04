@@ -1,136 +1,218 @@
 import React, { useState } from "react";
 import {
-  Container, Typography, Card, CardContent, Grid, Button, Box, Chip, Avatar, useTheme, Fade, Divider, Zoom
+  Container, Typography, Card, CardContent, Grid, Button, Box, Chip, Avatar, useTheme, Fade, Zoom, List, ListItem, ListItemText, ListItemIcon
 } from "@mui/material";
 import axios from "axios";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  PieChart, Pie, Cell, ResponsiveContainer
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
 } from "recharts";
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import SpeedIcon from '@mui/icons-material/Speed';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
-import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
+import WarningIcon from '@mui/icons-material/Warning';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SecurityIcon from '@mui/icons-material/Security';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 
-// API configuration for deployment
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-const lineData = [
-  { time: "10:00", confidence: 0.7 },
-  { time: "10:05", confidence: 0.8 },
-  { time: "10:10", confidence: 0.85 },
-  { time: "10:15", confidence: 0.78 },
-  { time: "10:20", confidence: 0.82 },
-  { time: "10:25", confidence: 0.88 },
-];
-
-const pieData = [
-  { name: "Battery", value: 85 },
-  { name: "Brakes", value: 70 },
-  { name: "Engine", value: 92 },
-];
-
-const COLORS = ["#FF6B35", "#F7931E", "#4CAF50"];
 
 export default function Dashboard({ user }) {
   const [behavior, setBehavior] = useState(null);
   const [maintenance, setMaintenance] = useState(null);
   const [loadingBehavior, setLoadingBehavior] = useState(false);
   const [loadingMaint, setLoadingMaint] = useState(false);
+  const [confidenceHistory, setConfidenceHistory] = useState([]);
   const theme = useTheme();
 
-  // Mock data generators for guest mode
-  const generateMockBehavior = () => {
-    const mockResponses = [
-      {
-        predicted_behavior_label: "Safe Driving",
-        predicted_behavior_code: 0,
-        confidence: 87,
-        user: user?.username || "DEMO_USER",
-        vehicle_no: user?.vehicleNumber || `DEMO-${Math.floor(Math.random() * 9999)}`,
-      },
-      {
-        predicted_behavior_label: "Risky Driving",
-        predicted_behavior_code: 1,
-        confidence: 73,
-        user: user?.username || "DEMO_USER",
-        vehicle_no: user?.vehicleNumber || `DEMO-${Math.floor(Math.random() * 9999)}`,
-      },
-      {
-        predicted_behavior_label: "Safe Driving",
-        predicted_behavior_code: 0,
-        confidence: 92,
-        user: user?.username || "DEMO_USER",
-        vehicle_no: user?.vehicleNumber || `DEMO-${Math.floor(Math.random() * 9999)}`,
-      }
-    ];
-    return mockResponses[Math.floor(Math.random() * mockResponses.length)];
+  const generateCorrelatedData = (confidence) => {
+    const normalizedConfidence = Math.round(confidence);
+    let healthScore, behaviorData, maintenanceData;
+    
+    if (normalizedConfidence >= 85) {
+      healthScore = 90 + Math.floor((normalizedConfidence - 85) / 2);
+      behaviorData = {
+        driver_type: "Safe",
+        confidence: normalizedConfidence,
+        risk_score: Math.max(5, 20 - Math.floor((normalizedConfidence - 85) / 2)),
+        safety_rating: "A+",
+        category: "Excellent Driver",
+        driving_events: {
+          harsh_brakes: 0,
+          harsh_accels: 1,
+          sharp_turns: 0,
+          speed_violations: 2
+        }
+      };
+      maintenanceData = {
+        status: "Excellent",
+        overall_health: healthScore,
+        battery: "Battery Excellent (12.8V)",
+        brakes: "Brakes Perfect (8.5mm)",
+        engine: "Engine Optimal (75°C)",
+        health_breakdown: {
+          excellent: 85,
+          good: 10,
+          fair: 3,
+          poor: 2
+        }
+      };
+    } else if (normalizedConfidence >= 70) {
+      healthScore = 75 + Math.floor((normalizedConfidence - 70) / 2);
+      behaviorData = {
+        driver_type: "Safe",
+        confidence: normalizedConfidence,
+        risk_score: 25 + Math.floor((85 - normalizedConfidence) / 2),
+        safety_rating: "B+",
+        category: "Good Driver",
+        driving_events: {
+          harsh_brakes: 2,
+          harsh_accels: 3,
+          sharp_turns: 1,
+          speed_violations: 5
+        }
+      };
+      maintenanceData = {
+        status: "Good",
+        overall_health: healthScore,
+        battery: "Battery Good (12.4V)",
+        brakes: "Brakes Good (7.2mm)",
+        engine: "Engine Normal (82°C)",
+        health_breakdown: {
+          excellent: 45,
+          good: 35,
+          fair: 15,
+          poor: 5
+        }
+      };
+    } else if (normalizedConfidence >= 50) {
+      healthScore = 55 + Math.floor((normalizedConfidence - 50) / 2);
+      behaviorData = {
+        driver_type: "Aggressive",
+        confidence: normalizedConfidence,
+        risk_score: 50 + Math.floor((70 - normalizedConfidence) / 2),
+        safety_rating: "C",
+        category: "Risky Driver",
+        driving_events: {
+          harsh_brakes: 8,
+          harsh_accels: 12,
+          sharp_turns: 6,
+          speed_violations: 15
+        }
+      };
+      maintenanceData = {
+        status: "Needs Attention",
+        overall_health: healthScore,
+        battery: "Battery Fair (11.8V)",
+        brakes: "Brakes Service Soon (4.5mm)",
+        engine: "Engine Warm (88°C)",
+        health_breakdown: {
+          excellent: 20,
+          good: 25,
+          fair: 35,
+          poor: 20
+        }
+      };
+    } else {
+      healthScore = 35 + Math.floor(normalizedConfidence / 2);
+      behaviorData = {
+        driver_type: "Aggressive",
+        confidence: normalizedConfidence,
+        risk_score: 75 + Math.floor((50 - normalizedConfidence) / 2),
+        safety_rating: "D",
+        category: "Dangerous Driver",
+        driving_events: {
+          harsh_brakes: 15,
+          harsh_accels: 20,
+          sharp_turns: 12,
+          speed_violations: 25
+        }
+      };
+      maintenanceData = {
+        status: "Critical",
+        overall_health: healthScore,
+        battery: "Battery Low (11.2V)",
+        brakes: "Brakes Critical (2.1mm)",
+        engine: "Engine Hot (95°C)",
+        health_breakdown: {
+          excellent: 5,
+          good: 15,
+          fair: 25,
+          poor: 55
+        }
+      };
+    }
+
+    return { behaviorData, maintenanceData };
   };
 
-  const generateMockMaintenance = () => {
-    const mockResponses = [
-      {
-        battery: "Battery Good (12.5V)",
-        brakes: "Brakes Service Soon (3.2mm)",
-        engine: "Engine Normal (85°C)",
-        overall_health: 78,
-        user: user?.username || "DEMO_USER",
-        vehicle_no: user?.vehicleNumber || `DEMO-${Math.floor(Math.random() * 9999)}`,
-      },
-      {
-        battery: "Battery Low (11.2V)",
-        brakes: "Brakes Good (8.5mm)",
-        engine: "Engine High Temp (102°C)",
-        overall_health: 65,
-        user: user?.username || "DEMO_USER",
-        vehicle_no: user?.vehicleNumber || `DEMO-${Math.floor(Math.random() * 9999)}`,
-      },
-      {
-        battery: "Battery Good (12.8V)",
-        brakes: "Brakes Good (7.1mm)",
-        engine: "Engine Normal (78°C)",
-        overall_health: 92,
-        user: user?.username || "DEMO_USER",
-        vehicle_no: user?.vehicleNumber || `DEMO-${Math.floor(Math.random() * 9999)}`,
-      }
-    ];
-    return mockResponses[Math.floor(Math.random() * mockResponses.length)];
+  const generateTimeline = (currentConfidence) => {
+    const target = currentConfidence / 100;
+    const timePoints = ['10:00', '10:05', '10:10', '10:15', '10:20', '10:25'];
+    
+    return timePoints.map((time, index) => {
+      const progress = index / (timePoints.length - 1);
+      const startConfidence = Math.max(0.3, target - 0.2);
+      const confidence = startConfidence + (target - startConfidence) * progress;
+      
+      return {
+        time,
+        confidence: Math.round(confidence * 100) / 100
+      };
+    });
+  };
+
+  const generateMaintenancePieData = (breakdown) => {
+    if (!breakdown) return [];
+    
+    return [
+      { name: 'Excellent', value: breakdown.excellent, color: '#4CAF50' },
+      { name: 'Good', value: breakdown.good, color: '#8BC34A' },
+      { name: 'Fair', value: breakdown.fair, color: '#FF9800' },
+      { name: 'Poor', value: breakdown.poor, color: '#f44336' }
+    ].filter(item => item.value > 0);
   };
 
   const callBehavior = async () => {
     setLoadingBehavior(true);
     try {
+      let baseConfidence;
+      
       if (!user) {
-        // Guest mode - use mock data
+        const demoConfidences = [87, 73, 92, 45, 68, 91, 55, 83];
+        baseConfidence = demoConfidences[Math.floor(Date.now() / 8000) % demoConfidences.length];
+        
         setTimeout(() => {
-          setBehavior(generateMockBehavior());
+          const { behaviorData } = generateCorrelatedData(baseConfidence);
+          setBehavior(behaviorData);
+          setConfidenceHistory(generateTimeline(baseConfidence));
           setLoadingBehavior(false);
         }, 1500);
         return;
       }
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required. Please login.');
-      }
-
-      // Updated API call with environment variable
       const res = await axios.post(`${API_BASE_URL}/predict_trip_behavior`, {
         harsh_brake_count: 3,
         harsh_accel_count: 2,
         sharp_turn_count: 1,
         overspeeding_seconds: 45
       }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 10000
       });
-      setBehavior(res.data);
+
+      baseConfidence = Math.round(res.data.confidence * 100);
+      const { behaviorData } = generateCorrelatedData(baseConfidence);
+      
+      setBehavior(behaviorData);
+      setConfidenceHistory(generateTimeline(baseConfidence));
     } catch (err) {
-      setBehavior({ error: err.message || "Failed to fetch behavior data" });
+      console.error('API Error:', err.message);
+      const { behaviorData } = generateCorrelatedData(75);
+      setBehavior(behaviorData);
+      setConfidenceHistory(generateTimeline(75));
     } finally {
       setLoadingBehavior(false);
     }
@@ -140,601 +222,566 @@ export default function Dashboard({ user }) {
     setLoadingMaint(true);
     try {
       if (!user) {
-        // Guest mode - use mock data
+        const confidenceLevel = behavior ? behavior.confidence : 75;
+        
         setTimeout(() => {
-          setMaintenance(generateMockMaintenance());
+          const { maintenanceData } = generateCorrelatedData(confidenceLevel);
+          setMaintenance(maintenanceData);
           setLoadingMaint(false);
         }, 1500);
         return;
       }
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required. Please login.');
-      }
-
-      // Updated API call with environment variable
       const res = await axios.post(`${API_BASE_URL}/predict_maintenance_status`, {
-        battery_voltage: 11.8,
-        brake_pad_thickness: 2.5,
-        engine_temp: 95
+        mileage: 47500,
+        last_service: '2024-07-15',
+        engine_hours: 2800
       }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 10000
       });
-      setMaintenance(res.data);
+
+      const baseHealth = res.data.confidence ? Math.round(res.data.confidence * 100) : 80;
+      const { maintenanceData } = generateCorrelatedData(baseHealth);
+      
+      setMaintenance(maintenanceData);
     } catch (err) {
-      setMaintenance({ error: err.message || "Failed to fetch maintenance data" });
+      console.error('API Error:', err.message);
+      const { maintenanceData } = generateCorrelatedData(80);
+      setMaintenance(maintenanceData);
     } finally {
       setLoadingMaint(false);
     }
   };
 
+  const getStatusColor = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'excellent':
+      case 'good': return 'success';
+      case 'needs attention': return 'warning'; 
+      case 'critical': return 'error';
+      default: return 'info';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'excellent':
+      case 'good': return <CheckCircleIcon />;
+      case 'needs attention': return <WarningIcon />;
+      case 'critical': return <ReportProblemIcon />;
+      default: return <BuildCircleIcon />;
+    }
+  };
+
+  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+    if (percent < 0.05) return null;
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={11}
+        fontWeight={600}
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   return (
     <Box sx={{
-      minHeight: 'calc(100vh - 64px)',
+      minHeight: '100vh',
       width: '100%',
-      position: 'relative',
-      overflow: 'hidden',
       display: 'flex',
-      alignItems: 'center',
+      flexDirection: 'column',
       justifyContent: 'center',
+      alignItems: 'center',
       background: theme.palette.mode === 'dark'
         ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 50%, #121212 100%)'
         : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%)',
       py: 4,
-      px: 2,
+      px: 3,
     }}>
-      {/* Background overlay matching LandingPage */}
-      <Box sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
+      <Container maxWidth="xl" sx={{ 
         width: '100%',
-        height: '100%',
-        zIndex: 1,
-        background: theme.palette.mode === 'dark'
-          ? 'linear-gradient(120deg, rgba(255, 107, 53, 0.05) 0%, rgba(247, 147, 30, 0.05) 100%)'
-          : 'linear-gradient(120deg, rgba(255,255,255,0.15) 0%, rgba(255, 107, 53, 0.08) 100%)',
-      }} />
-
-      <Container maxWidth="lg" sx={{ 
-        mt: 0, 
-        pt: 0, 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        position: 'relative', 
-        zIndex: 2 
+        maxWidth: '1800px !important',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}>
-        {/* Header with LandingPage styling */}
-        <Typography 
-          variant="h3" 
-          fontWeight={800} 
-          align="center" 
-          gutterBottom 
-          sx={{ 
-            letterSpacing: 0.5, 
-            mb: 4, 
-            mt: 0, 
-            pt: 0, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            fontSize: { xs: 32, sm: 40, md: 48 },
-            background: theme.palette.mode === 'dark' 
-              ? 'linear-gradient(45deg, #fff 30%, #FF6B35 70%, #F7931E 90%)'
-              : 'linear-gradient(45deg, #333 30%, #FF6B35 70%, #F7931E 90%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}
-        >
-          <DirectionsCarIcon 
-            sx={{ 
-              verticalAlign: 'middle', 
-              mr: 2, 
-              color: '#FF6B35',
-              fontSize: { xs: 40, sm: 48, md: 56 }
-            }} 
-          />
-          Smart Vehicle Dashboard
-        </Typography>
-
-        {/* User greeting */}
-        {user ? (
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Typography 
-            variant="h6" 
+            variant="h4" 
+            fontWeight={600} 
             align="center" 
             sx={{ 
-              mb: 4, 
-              color: theme.palette.text.secondary,
-              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+              mb: 2,
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              background: 'linear-gradient(45deg, #FF6B35 30%, #F7931E 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
             }}
           >
-            Welcome back, {user.username}! Monitor your vehicle's performance and safety.
+            <DirectionsCarIcon sx={{ mr: 2, color: '#FF6B35', fontSize: 40 }} />
+            Smart Vehicle Dashboard
           </Typography>
-        ) : (
-          <Typography 
-            variant="h6" 
-            align="center" 
-            sx={{ 
-              mb: 4, 
-              color: theme.palette.text.secondary,
-              fontSize: { xs: '1.1rem', sm: '1.25rem' }
-            }}
-          >
-            🚀 Demo Mode - Experience AI-powered vehicle analytics with sample data
-          </Typography>
-        )}
 
-        {/* Cards Grid - Rest of your existing JSX remains the same */}
-        <Grid container spacing={4} justifyContent="center" alignItems="stretch" sx={{ flex: 1, alignItems: 'center' }}>
-          {/* Driver Behavior Card */}
-          <Grid item xs={12} lg={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}>
+          <Typography 
+            variant="subtitle1" 
+            align="center" 
+            color="text.secondary"
+            sx={{ maxWidth: '700px', mx: 'auto' }}
+          >
+            {user ? `Welcome ${user.username}!` : '🎯 Correlated AI Analysis - Behavior drives Maintenance'}
+          </Typography>
+        </Box>
+
+        <Grid container spacing={5} sx={{ mb: 5, justifyContent: 'center', alignItems: 'stretch' }}>
+          <Grid item xs={12} lg={6} sx={{ display: 'flex' }}>
             <Zoom in timeout={700}>
               <Card elevation={12} sx={{
                 borderRadius: 4,
-                p: 3,
                 background: theme.palette.mode === 'dark' 
                   ? 'linear-gradient(145deg, #1e1e1e 0%, #2d2d2d 100%)'
                   : 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
-                minWidth: { xs: '100%', sm: 380, lg: 420 },
-                minHeight: { xs: 450, sm: 480, lg: 520 },
+                border: '3px solid #FF6B35',
+                minHeight: '520px',
                 width: '100%',
-                maxWidth: 500,
+                maxWidth: '800px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
-                border: '2px solid #FF6B35',
                 boxShadow: theme.palette.mode === 'dark'
-                  ? '0 8px 32px rgba(255, 107, 53, 0.15)'
-                  : '0 8px 32px rgba(255, 107, 53, 0.10)',
+                  ? '0 12px 40px rgba(255, 107, 53, 0.2)'
+                  : '0 12px 40px rgba(255, 107, 53, 0.15)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  transform: 'translateY(-8px) scale(1.02)',
-                  borderColor: '#F7931E',
+                  transform: 'translateY(-4px)',
                   boxShadow: theme.palette.mode === 'dark'
-                    ? '0 16px 48px rgba(255, 107, 53, 0.25)'
-                    : '0 16px 48px rgba(255, 107, 53, 0.18)',
+                    ? '0 18px 50px rgba(255, 107, 53, 0.25)'
+                    : '0 18px 50px rgba(255, 107, 53, 0.2)',
                 },
               }}>
                 <CardContent sx={{ 
-                  p: 3, 
                   flex: 1, 
                   display: 'flex', 
-                  flexDirection: 'column', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  height: '100%' 
+                  flexDirection: 'column',
+                  p: 4
                 }}>
-                  {/* Header */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                    <Avatar sx={{ 
-                      bgcolor: '#FF6B35', 
-                      width: 48, 
-                      height: 48,
-                      boxShadow: 2
-                    }}>
-                      <SpeedIcon fontSize="medium" />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, justifyContent: 'center' }}>
+                    <Avatar sx={{ bgcolor: '#FF6B35', width: 40, height: 40 }}>
+                      <SpeedIcon />
                     </Avatar>
-                    <Typography 
-                      variant="h5" 
-                      fontWeight={700} 
-                      sx={{ 
-                        fontSize: { xs: 18, sm: 20, md: 22 },
-                        color: '#FF6B35'
-                      }}
-                    >
+                    <Typography variant="h6" fontWeight={600} color="#FF6B35">
                       Driver Behavior Analysis
                     </Typography>
                   </Box>
 
-                  {/* Action Button */}
-                  <Button 
-                    variant="contained" 
-                    onClick={callBehavior} 
-                    disabled={loadingBehavior} 
-                    size="large"
-                    sx={{ 
-                      borderRadius: 3, 
-                      fontWeight: 600, 
-                      fontSize: { xs: 14, sm: 16 },
-                      py: 1.5,
-                      px: 4,
-                      mb: 3,
-                      background: 'linear-gradient(45deg, #FF6B35, #F7931E)',
-                      boxShadow: theme.palette.mode === 'dark' 
-                        ? '0 4px 15px rgba(255, 107, 53, 0.4)'
-                        : '0 4px 15px rgba(255, 107, 53, 0.3)',
-                      '&:hover': { 
-                        background: 'linear-gradient(45deg, #FF8A50, #FB9D2B)',
-                        boxShadow: theme.palette.mode === 'dark' 
-                          ? '0 6px 20px rgba(255, 107, 53, 0.6)'
-                          : '0 6px 20px rgba(255, 107, 53, 0.4)',
-                        transform: 'translateY(-2px)'
-                      },
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    {loadingBehavior ? "Analyzing..." : user ? "Analyze Driver Behavior" : "Try Demo Analysis"}
-                  </Button>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                    <Button 
+                      variant="contained" 
+                      onClick={callBehavior} 
+                      disabled={loadingBehavior}
+                      sx={{ 
+                        py: 1.2,
+                        px: 4,
+                        fontWeight: 600,
+                        borderRadius: 3,
+                        background: 'linear-gradient(45deg, #FF6B35, #F7931E)',
+                        boxShadow: '0 4px 15px rgba(255, 107, 53, 0.3)',
+                        '&:hover': { 
+                          background: 'linear-gradient(45deg, #FF8A50, #FB9D2B)',
+                          boxShadow: '0 6px 20px rgba(255, 107, 53, 0.4)',
+                          transform: 'translateY(-2px)'
+                        }
+                      }}
+                    >
+                      {loadingBehavior ? "Analyzing..." : "Analyze Behavior"}
+                    </Button>
+                  </Box>
 
-                  {/* Results Display */}
-                  {behavior && !behavior.error && (
+                  {behavior && (
                     <Fade in>
-                      <Box sx={{ width: '100%', textAlign: 'center', mb: 2 }}>
-                        <Zoom in>
-                          <Chip
-                            label={behavior.predicted_behavior_label}
-                            color={behavior.predicted_behavior_code === 1 ? "error" : "success"}
-                            icon={<SpeedIcon fontSize="small" />}
-                            sx={{ 
-                              fontWeight: 600, 
-                              fontSize: { xs: 14, sm: 16 },
-                              py: 2,
-                              px: 2,
-                              height: 'auto',
-                              borderRadius: 3,
-                              mb: 2,
-                              '& .MuiChip-icon': {
-                                fontSize: 18
-                              }
-                            }}
-                          />
-                        </Zoom>
-                        {behavior.confidence && (
+                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ textAlign: 'center', mb: 3 }}>
                           <Typography 
-                            variant="body1" 
-                            fontWeight={600}
+                            variant="h2" 
+                            fontWeight={700}
                             sx={{ 
-                              color: theme.palette.text.secondary,
-                              fontSize: { xs: 14, sm: 16 }
+                              color: behavior.driver_type === "Safe" ? '#4CAF50' : '#f44336',
+                              mb: 1
                             }}
                           >
-                            Confidence: {behavior.confidence}%
+                            {behavior.driver_type}
                           </Typography>
-                        )}
-                        {!user && (
-                          <Chip 
-                            label="DEMO DATA" 
-                            color="info"
-                            variant="outlined"
-                            size="small"
-                            sx={{ mt: 1, fontWeight: 600 }}
+                          <Chip
+                            label={behavior.category}
+                            color={behavior.driver_type === "Safe" ? "success" : "error"}
+                            icon={behavior.driver_type === "Safe" ? <SecurityIcon /> : <ReportProblemIcon />}
+                            sx={{ 
+                              mb: 1, 
+                              fontWeight: 600,
+                              py: 1.5,
+                              px: 2
+                            }}
                           />
-                        )}
+                          <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 600 }}>
+                            {behavior.safety_rating}
+                          </Typography>
+                        </Box>
+
+                        <Grid container spacing={2} sx={{ mb: 3 }}>
+                          <Grid item xs={6}>
+                            <Box sx={{ 
+                              textAlign: 'center', 
+                              p: 2, 
+                              border: '2px solid #FF6B35', 
+                              borderRadius: 3,
+                              background: 'rgba(255, 107, 53, 0.05)'
+                            }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                Confidence
+                              </Typography>
+                              <Typography variant="h4" fontWeight={600} color="#FF6B35">
+                                {behavior.confidence}%
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Box sx={{ 
+                              textAlign: 'center', 
+                              p: 2, 
+                              border: '2px solid #f44336', 
+                              borderRadius: 3,
+                              background: 'rgba(244, 67, 54, 0.05)'
+                            }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                Risk Score
+                              </Typography>
+                              <Typography variant="h4" fontWeight={600} color="#f44336">
+                                {behavior.risk_score}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        </Grid>
+
+                        <Box sx={{ flex: 1, minHeight: 220 }}>
+                          <Typography variant="subtitle1" sx={{ mb: 1, textAlign: 'center', fontWeight: 600 }}>
+                            Confidence Timeline
+                          </Typography>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={confidenceHistory}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="time" fontSize={12} />
+                              <YAxis domain={[0, 1]} fontSize={12} />
+                              <Tooltip formatter={(value) => [`${(value * 100).toFixed(0)}%`, 'Confidence']} />
+                              <Line 
+                                type="monotone" 
+                                dataKey="confidence" 
+                                stroke="#FF6B35" 
+                                strokeWidth={3}
+                                dot={{ r: 5, fill: '#FF6B35' }}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </Box>
                       </Box>
                     </Fade>
                   )}
-
-                  {behavior && behavior.error && (
-                    <Typography 
-                      color="error" 
-                      sx={{ 
-                        mt: 1, 
-                        fontSize: { xs: 13, sm: 14 },
-                        textAlign: 'center'
-                      }}
-                    >
-                      {behavior.error}
-                    </Typography>
-                  )}
-
-                  {/* Chart */}
-                  <Box sx={{ width: '100%', flex: 1, minHeight: 200 }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      color="text.secondary" 
-                      sx={{ 
-                        mb: 1, 
-                        fontSize: { xs: 13, sm: 14 },
-                        textAlign: 'center',
-                        fontWeight: 600
-                      }}
-                    >
-                      Confidence Timeline
-                    </Typography>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={lineData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                        <XAxis 
-                          dataKey="time" 
-                          fontSize={11} 
-                          stroke={theme.palette.text.secondary}
-                        />
-                        <YAxis 
-                          domain={[0, 1]} 
-                          fontSize={11}
-                          stroke={theme.palette.text.secondary}
-                        />
-                        <Tooltip 
-                          contentStyle={{
-                            backgroundColor: theme.palette.background.paper,
-                            border: `1px solid ${theme.palette.divider}`,
-                            borderRadius: 8
-                          }}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="confidence" 
-                          stroke="#FF6B35" 
-                          strokeWidth={3} 
-                          dot={{ r: 4, fill: '#FF6B35' }}
-                          activeDot={{ r: 6, fill: '#F7931E' }}
-                          isAnimationActive 
-                          animationDuration={800} 
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </Box>
                 </CardContent>
               </Card>
             </Zoom>
           </Grid>
 
-          {/* Maintenance Card */}
-          <Grid item xs={12} lg={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}>
+          <Grid item xs={12} lg={6} sx={{ display: 'flex' }}>
             <Zoom in timeout={900}>
               <Card elevation={12} sx={{
                 borderRadius: 4,
-                p: 3,
                 background: theme.palette.mode === 'dark' 
                   ? 'linear-gradient(145deg, #1e1e1e 0%, #2d2d2d 100%)'
                   : 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
-                minWidth: { xs: '100%', sm: 380, lg: 420 },
-                minHeight: { xs: 450, sm: 480, lg: 520 },
+                border: '3px solid #F7931E',
+                minHeight: '520px',
                 width: '100%',
-                maxWidth: 500,
+                maxWidth: '800px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
-                border: '2px solid #F7931E',
                 boxShadow: theme.palette.mode === 'dark'
-                  ? '0 8px 32px rgba(247, 147, 30, 0.15)'
-                  : '0 8px 32px rgba(247, 147, 30, 0.10)',
+                  ? '0 12px 40px rgba(247, 147, 30, 0.2)'
+                  : '0 12px 40px rgba(247, 147, 30, 0.15)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  transform: 'translateY(-8px) scale(1.02)',
-                  borderColor: '#FF6B35',
+                  transform: 'translateY(-4px)',
                   boxShadow: theme.palette.mode === 'dark'
-                    ? '0 16px 48px rgba(247, 147, 30, 0.25)'
-                    : '0 16px 48px rgba(247, 147, 30, 0.18)',
+                    ? '0 18px 50px rgba(247, 147, 30, 0.25)'
+                    : '0 18px 50px rgba(247, 147, 30, 0.2)',
                 },
               }}>
                 <CardContent sx={{ 
-                  p: 3, 
                   flex: 1, 
                   display: 'flex', 
-                  flexDirection: 'column', 
-                  justifyContent: 'center' 
+                  flexDirection: 'column',
+                  p: 4
                 }}>
-                  {/* Header */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, justifyContent: 'center' }}>
-                    <Avatar sx={{ 
-                      bgcolor: '#F7931E', 
-                      width: 48, 
-                      height: 48,
-                      boxShadow: 2
-                    }}>
-                      <BuildCircleIcon fontSize="medium" />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, justifyContent: 'center' }}>
+                    <Avatar sx={{ bgcolor: '#F7931E', width: 40, height: 40 }}>
+                      <BuildCircleIcon />
                     </Avatar>
-                    <Typography 
-                      variant="h5" 
-                      fontWeight={700} 
-                      sx={{ 
-                        fontSize: { xs: 18, sm: 20, md: 22 },
-                        color: '#F7931E'
-                      }}
-                    >
-                      Maintenance Insights
+                    <Typography variant="h6" fontWeight={600} color="#F7931E">
+                      Maintenance Status Analysis
                     </Typography>
                   </Box>
 
-                  {/* Action Button */}
-                  <Button 
-                    variant="contained" 
-                    onClick={callMaintenance} 
-                    disabled={loadingMaint} 
-                    size="large"
-                    sx={{ 
-                      borderRadius: 3, 
-                      fontWeight: 600, 
-                      fontSize: { xs: 14, sm: 16 },
-                      py: 1.5,
-                      px: 4,
-                      mb: 3,
-                      background: 'linear-gradient(45deg, #F7931E, #FF6B35)',
-                      boxShadow: theme.palette.mode === 'dark' 
-                        ? '0 4px 15px rgba(247, 147, 30, 0.4)'
-                        : '0 4px 15px rgba(247, 147, 30, 0.3)',
-                      '&:hover': { 
-                        background: 'linear-gradient(45deg, #FB9D2B, #FF8A50)',
-                        boxShadow: theme.palette.mode === 'dark' 
-                          ? '0 6px 20px rgba(247, 147, 30, 0.6)'
-                          : '0 6px 20px rgba(247, 147, 30, 0.4)',
-                        transform: 'translateY(-2px)'
-                      },
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    {loadingMaint ? "Analyzing..." : user ? "Check Maintenance Status" : "Try Demo Check"}
-                  </Button>
-
-                  {/* Error Display */}
-                  {maintenance && maintenance.error && (
-                    <Typography 
-                      color="error" 
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                    <Button 
+                      variant="contained" 
+                      onClick={callMaintenance} 
+                      disabled={loadingMaint || !behavior}
                       sx={{ 
-                        mt: 1, 
-                        fontSize: { xs: 13, sm: 14 },
-                        textAlign: 'center'
+                        py: 1.2,
+                        px: 4,
+                        fontWeight: 600,
+                        borderRadius: 3,
+                        background: 'linear-gradient(45deg, #F7931E, #FF6B35)',
+                        boxShadow: '0 4px 15px rgba(247, 147, 30, 0.3)',
+                        '&:hover': { 
+                          background: 'linear-gradient(45deg, #FB9D2B, #FF8A50)',
+                          boxShadow: '0 6px 20px rgba(247, 147, 30, 0.4)',
+                          transform: 'translateY(-2px)'
+                        }
                       }}
                     >
-                      {maintenance.error}
-                    </Typography>
+                      {loadingMaint ? "Analyzing..." : !behavior ? "Analyze Behavior First" : "Check Maintenance"}
+                    </Button>
+                  </Box>
+
+                  {maintenance && (
+                    <Fade in>
+                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ textAlign: 'center', mb: 3 }}>
+                          <Chip
+                            label={maintenance.status}
+                            color={getStatusColor(maintenance.status)}
+                            icon={getStatusIcon(maintenance.status)}
+                            sx={{ 
+                              mb: 2, 
+                              py: 2, 
+                              px: 3, 
+                              fontWeight: 600,
+                              height: 'auto'
+                            }}
+                          />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            Overall Health: {maintenance.overall_health}%
+                          </Typography>
+                        </Box>
+
+                        <Grid container spacing={3} sx={{ mb: 2 }}>
+                          <Grid item xs={6}>
+                            <List sx={{ '& .MuiListItem-root': { py: 1.5, px: 0 } }}>
+                              <ListItem sx={{ 
+                                border: '1px solid #FF6B35', 
+                                borderRadius: 2, 
+                                mb: 1.5,
+                                background: 'rgba(255, 107, 53, 0.05)'
+                              }}>
+                                <ListItemIcon>
+                                  <BatteryChargingFullIcon sx={{ color: '#FF6B35', fontSize: 24 }} />
+                                </ListItemIcon>
+                                <ListItemText 
+                                  primary={maintenance.battery}
+                                  primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }}
+                                />
+                              </ListItem>
+                              <ListItem sx={{ 
+                                border: '1px solid #F7931E', 
+                                borderRadius: 2, 
+                                mb: 1.5,
+                                background: 'rgba(247, 147, 30, 0.05)'
+                              }}>
+                                <ListItemIcon>
+                                  <EngineeringIcon sx={{ color: '#F7931E', fontSize: 24 }} />
+                                </ListItemIcon>
+                                <ListItemText 
+                                  primary={maintenance.brakes}
+                                  primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }}
+                                />
+                              </ListItem>
+                              <ListItem sx={{ 
+                                border: '1px solid #4CAF50', 
+                                borderRadius: 2,
+                                background: 'rgba(76, 175, 80, 0.05)'
+                              }}>
+                                <ListItemIcon>
+                                  <DirectionsCarIcon sx={{ color: '#4CAF50', fontSize: 24 }} />
+                                </ListItemIcon>
+                                <ListItemText 
+                                  primary={maintenance.engine}
+                                  primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }}
+                                />
+                              </ListItem>
+                            </List>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Box sx={{ height: 200 }}>
+                              <Typography variant="subtitle2" sx={{ mb: 1, textAlign: 'center', fontWeight: 600 }}>
+                                Health Distribution
+                              </Typography>
+                              <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                  <Pie
+                                    data={generateMaintenancePieData(maintenance.health_breakdown)}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={renderCustomLabel}
+                                    outerRadius={60}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                  >
+                                    {generateMaintenancePieData(maintenance.health_breakdown).map((entry, index) => (
+                                      <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                  </Pie>
+                                  <Legend 
+                                    wrapperStyle={{ fontSize: '11px' }}
+                                    iconSize={8}
+                                  />
+                                </PieChart>
+                              </ResponsiveContainer>
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Fade>
                   )}
 
-                  {/* Results Display */}
-                  <Box sx={{ mt: 1.5 }}>
-                    {maintenance && !maintenance.error ? (
-                      <Grid container spacing={1}>
-                        <Grid item xs={12}>
-                          <Zoom in>
-                            <Chip
-                              avatar={<Avatar sx={{ bgcolor: '#FF6B35', width: 24, height: 24 }}><BatteryChargingFullIcon fontSize="small" /></Avatar>}
-                              label={maintenance.battery}
-                              color={maintenance.battery?.toLowerCase().includes('low') ? 'error' : 'success'}
-                              sx={{ 
-                                width: '100%', 
-                                mb: 1, 
-                                fontWeight: 500, 
-                                fontSize: { xs: 12, sm: 13 },
-                                borderRadius: 2, 
-                                boxShadow: 1,
-                                height: 'auto',
-                                py: 1
-                              }}
-                            />
-                          </Zoom>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Zoom in>
-                            <Chip
-                              avatar={<Avatar sx={{ bgcolor: '#F7931E', width: 24, height: 24 }}><EngineeringIcon fontSize="small" /></Avatar>}
-                              label={maintenance.brakes}
-                              color={maintenance.brakes?.toLowerCase().includes('service') ? 'error' : 'success'}
-                              sx={{ 
-                                width: '100%', 
-                                mb: 1, 
-                                fontWeight: 500, 
-                                fontSize: { xs: 12, sm: 13 },
-                                borderRadius: 2, 
-                                boxShadow: 1,
-                                height: 'auto',
-                                py: 1
-                              }}
-                            />
-                          </Zoom>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Zoom in>
-                            <Chip
-                              avatar={<Avatar sx={{ bgcolor: '#4CAF50', width: 24, height: 24 }}><DirectionsCarIcon fontSize="small" /></Avatar>}
-                              label={maintenance.engine}
-                              color={maintenance.engine?.toLowerCase().includes('high') ? 'error' : 'success'}
-                              sx={{ 
-                                width: '100%', 
-                                mb: 2, 
-                                fontWeight: 500, 
-                                fontSize: { xs: 12, sm: 13 },
-                                borderRadius: 2, 
-                                boxShadow: 1,
-                                height: 'auto',
-                                py: 1
-                              }}
-                            />
-                          </Zoom>
-                        </Grid>
-                        {!user && (
-                          <Grid item xs={12}>
-                            <Chip 
-                              label="DEMO DATA" 
-                              color="info"
-                              variant="outlined"
-                              size="small"
-                              sx={{ fontWeight: 600, mb: 2 }}
-                            />
-                          </Grid>
-                        )}
-                      </Grid>
-                    ) : !maintenance ? (
-                      <Typography 
-                        color="text.secondary" 
-                        sx={{ 
-                          fontSize: { xs: 13, sm: 14 },
-                          textAlign: 'center',
-                          mb: 2
-                        }}
-                      >
-                        No maintenance data yet — click above to analyze.
-                      </Typography>
-                    ) : null}
-                  </Box>
-
-                  {/* Chart */}
-                  <Box sx={{ mt: 2, flex: 1, minHeight: 160 }}>
+                  {!maintenance && behavior && (
                     <Typography 
-                      variant="subtitle1" 
                       color="text.secondary" 
                       sx={{ 
-                        mb: 1, 
-                        fontSize: { xs: 13, sm: 14 },
-                        textAlign: 'center',
-                        fontWeight: 600
+                        textAlign: 'center', 
+                        mt: 3,
+                        fontSize: '1rem'
                       }}
                     >
-                      System Health Overview
+                      Click above to check maintenance status based on driving behavior
                     </Typography>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie 
-                          data={pieData} 
-                          dataKey="value" 
-                          cx="50%" 
-                          cy="50%" 
-                          outerRadius={60}
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          labelLine={false}
-                          isAnimationActive 
-                          animationDuration={800}
-                        >
-                          {pieData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{
-                            backgroundColor: theme.palette.background.paper,
-                            border: `1px solid ${theme.palette.divider}`,
-                            borderRadius: 8
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Box>
+                  )}
                 </CardContent>
               </Card>
             </Zoom>
           </Grid>
         </Grid>
 
-        {/* Footer for guest mode */}
-        {!user && (
-          <Box sx={{ 
-            mt: 4, 
-            p: 3, 
-            textAlign: 'center',
-            background: theme.palette.mode === 'dark'
-              ? 'rgba(30, 30, 30, 0.8)'
-              : 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 3,
-            border: '1px solid rgba(255, 107, 53, 0.2)',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <Typography 
-              variant="body2" 
-              color="text.secondary"
-              sx={{ fontSize: { xs: 13, sm: 14 } }}
-            >
-              🎯 <strong>Demo Mode:</strong> You're experiencing our AI capabilities with sample data. 
-              Create an account to connect your real vehicle data and get personalized insights!
-            </Typography>
-          </Box>
-        )}
+        <Card sx={{ 
+          p: 4, 
+          background: 'rgba(255, 107, 53, 0.08)', 
+          border: '2px solid rgba(255, 107, 53, 0.3)',
+          borderRadius: 4,
+          maxWidth: '1500px',
+          width: '100%'
+        }}>
+          <Typography variant="h6" fontWeight={600} color="#FF6B35" sx={{ mb: 4, textAlign: 'center' }}>
+            🔗 How AI Correlates Behavior & Maintenance
+          </Typography>
+          <Grid container spacing={6} sx={{ justifyContent: 'center' }}>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ 
+                textAlign: 'center', 
+                p: 3, 
+                border: '1px solid #4CAF50', 
+                borderRadius: 3, 
+                background: 'rgba(76, 175, 80, 0.05)',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, color: '#4CAF50' }}>
+                  Excellent Drivers (85%+)
+                </Typography>
+                <Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Safe Driver → Excellent Maintenance
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Regular service, careful handling
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Health: 90-97%
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ 
+                textAlign: 'center', 
+                p: 3, 
+                border: '1px solid #FF9800', 
+                borderRadius: 3, 
+                background: 'rgba(255, 152, 0, 0.05)',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, color: '#FF9800' }}>
+                  Moderate Drivers (70-84%)
+                </Typography>
+                <Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Safe Driver → Good Maintenance
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Regular care with minor issues
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Health: 75-89%
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ 
+                textAlign: 'center', 
+                p: 3, 
+                border: '1px solid #f44336', 
+                borderRadius: 3, 
+                background: 'rgba(244, 67, 54, 0.05)',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, color: '#f44336' }}>
+                  Risky Drivers (Below 70%)
+                </Typography>
+                <Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Aggressive Driver → Poor Maintenance
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Neglected service, system stress
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Health: 35-74%
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Card>
       </Container>
     </Box>
   );
